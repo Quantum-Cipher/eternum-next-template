@@ -1,0 +1,59 @@
+name: Validate Next.js Root
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Ensure package.json exists at root
+        run: |
+          if [ ! -f package.json ]; then
+            echo "❌ package.json missing at repo root"
+            exit 1
+          fi
+
+      - name: Ensure Next.js dependency exists
+        run: |
+          if ! grep -q '"next"' package.json; then
+            echo "❌ Next.js dependency missing"
+            exit 1
+          fi
+
+      - name: Ensure App Router or Pages Router exists
+        run: |
+          if [ ! -d app ] && [ ! -d pages ]; then
+            echo "❌ Neither app/ nor pages/ directory found"
+            exit 1
+          fi
+
+      - name: Ensure Next config exists
+        run: |
+          if ! ls next.config.* >/dev/null 2>&1; then
+            echo "❌ next.config file missing"
+            exit 1
+          fi
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build (proves real root)
+        run: pnpm build
