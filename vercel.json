@@ -1,0 +1,16 @@
+{
+  "version": 2,
+  "name": "v0-ethereum-wallet-generator",
+  "routes": [
+    {
+      "src": "/api/verify",
+      "headers": {
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Methods": "POST, OPTIONS",
+        "Access-Control-Allow-Headers": "Content-Type, Authorization"
+      },
+      "dest": "/api/verify.js"
+    },
+    { "src": "/(.*)", "dest": "/$1" }
+  ]
+}
