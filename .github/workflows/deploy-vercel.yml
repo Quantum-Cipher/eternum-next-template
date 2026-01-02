@@ -1,0 +1,26 @@
+      - name: Deploy to Vercel (Production)
+        run: |
+          npx vercel deploy --prod --yes \
+            --token=${{ secrets.VERCEL_TOKEN }}
+
+      - name: Pin deployment metadata to IPFS
+        run: |
+          echo "Preparing IPFS payload…"
+
+          DEPLOY_HASH=$(git rev-parse HEAD)
+          DEPLOY_TIME=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+
+          cat > ipfs-payload.json <<EOF
+          {
+            "project": "v0-ethereum-wallet-generator",
+            "commit": "$DEPLOY_HASH",
+            "timestamp": "$DEPLOY_TIME",
+            "network": "vercel",
+            "environment": "production"
+          }
+          EOF
+
+          curl -X POST "${{ secrets.IPFS_API_URL }}" \
+            -H "Authorization: Bearer ${{ secrets.IPFS_API_TOKEN }}" \
+            -H "Content-Type: application/json" \
+            --data-binary @ipfs-payload.json
